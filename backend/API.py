@@ -39,6 +39,6 @@ def get_NDay_Forecast(model_id: str, N: int):
     
     if model:
         predictions = model.predict(N)
-        return predictions
+        return {"predicted_data" : predictions}
     else:
         raise HTTPException(status_code=404, detail="Model does not exist")
