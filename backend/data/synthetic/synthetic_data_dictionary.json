@@ -1,0 +1,65 @@
+[
+  {
+    "column_name": "code_module",
+    "data_type": "string",
+    "unit": "N/A",
+    "valid_range": "OULAD module codes (e.g., AAA, BBB)",
+    "generation_logic": "Extracted directly from OULAD courses.csv table."
+  },
+  {
+    "column_name": "code_presentation",
+    "data_type": "string",
+    "unit": "N/A",
+    "valid_range": "OULAD presentation terms (e.g., 2013J, 2014B)",
+    "generation_logic": "Extracted directly from OULAD courses.csv table."
+  },
+  {
+    "column_name": "day_offset",
+    "data_type": "integer",
+    "unit": "Days",
+    "valid_range": "0 to 249",
+    "generation_logic": "Represents the chronological day index from the start of the presentation."
+  },
+  {
+    "column_name": "marketing_spend",
+    "data_type": "float",
+    "unit": "USD",
+    "valid_range": "10.0 to 2000.0",
+    "generation_logic": "Base cost of 10-50, spiking to 500-2000 on days where marketing_campaign_flag is 1."
+  },
+  {
+    "column_name": "marketing_campaign_flag",
+    "data_type": "integer",
+    "unit": "Binary Flag",
+    "valid_range": "0 or 1",
+    "generation_logic": "Randomly generated with a 3% probability per day to simulate sporadic ad campaigns."
+  },
+  {
+    "column_name": "holiday_flag",
+    "data_type": "integer",
+    "unit": "Binary Flag",
+    "valid_range": "0 or 1",
+    "generation_logic": "Set to 1 during predetermined recurring 5-day periods (e.g., days 90-95, 190-195) to simulate public holidays."
+  },
+  {
+    "column_name": "semester_start_flag",
+    "data_type": "integer",
+    "unit": "Binary Flag",
+    "valid_range": "0 or 1",
+    "generation_logic": "Set to 1 for the first 14 days (day_offset < 14) of the presentation."
+  },
+  {
+    "column_name": "semester_end_flag",
+    "data_type": "integer",
+    "unit": "Binary Flag",
+    "valid_range": "0 or 1",
+    "generation_logic": "Set to 1 for the last 14 days of the presentation."
+  },
+  {
+    "column_name": "enrollment_num_daily",
+    "data_type": "integer",
+    "unit": "Students",
+    "valid_range": ">= 0",
+    "generation_logic": "Sum of linear trend, weekly sine-wave seasonality, semester start spikes, holiday drops, marketing spikes, and Gaussian noise. Clipped at 0."
+  }
+]
