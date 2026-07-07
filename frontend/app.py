@@ -3,13 +3,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import requests
+import os
+import json
 
 st.set_page_config(page_title="Dashboard", layout="wide")
 models = ["dummy", "dummy2"]
+BASE_URL = os.getenv("API_URL", "http://localhost:8000")
 
 # API and data functions
 def api_request(url, http_request):
-    BASE_URL = "http://localhost:8000" #TODO as env variable
     url = f"{BASE_URL}/{url}"
 
     try:
@@ -42,25 +44,28 @@ def api_request(url, http_request):
 def load_data():
     success, json_data = api_request("data", requests.get)
     if success:
-        return json_data["historical_data"], json_data["generated_data"]
+        hist = json.loads(json_data["historical_data"])
+        gen = json.loads(json_data["generated_data"])
+
+        return pd.DataFrame(hist), pd.DataFrame(gen)
     else:
-        return [],[]#TODO error handling    
+        return pd.DataFrame(),pd.DataFrame()#TODO error handling    
 
 @st.cache_data
 def generate_data(days: int):
     success, json_data = api_request(f"data/new/{days}", requests.post)
     if success:
-        return json_data["generated_data"]
+        return pd.DataFrame(json.loads(json_data["generated_data"]))
     else:
-        return []#TODO error handling
+        return pd.DataFrame()#TODO error handling
 
 @st.cache_data
 def predict_data(model: str, days:int):
     success, json_data = api_request(f"forecast/{model}/{days}", requests.get)
     if success:
-        return json_data["predicted_data"]
+        return pd.DataFrame(json.loads(json_data["predicted_data"]))
     else:
-        return []#TODO error handling
+        return pd.DataFrame()#TODO error handling
 
 
 # UI event handler
@@ -121,26 +126,34 @@ def init_forecast_plots():
     key="selected_models" 
     )
 
+    print("historical data")
+    print(st.session_state.data["historical_data"])
+    print("generated data")
+    print(st.session_state.data["generated_data"])
     #TODO
-    x = np.arange(10)
+    x = np.arange(0)
 
     df = pd.DataFrame({
         "x": x,
-        "Line A": np.sin(x),
-        "Line B": np.cos(x),
-        "Line C": np.sin(x) + np.cos(x)
+        "historical_data": [],#st.session_state.data["historical_data"],
+        "generated_data": []#st.session_state.data["generated_data"],
     })
+    #TDOD stack for each model column to df
+    #"dummy": st.session_state.data["historical_data"],
+    #    "dummy2": np.sin(x) + np.cos(x)
+    #})
 
         # Placeholder graph
     fig, ax = plt.subplots(figsize=(6, 3))
 
-    ax.plot(df["x"], df["Line A"], label="Line A")
-    ax.plot(df["x"], df["Line B"], label="Line B")
-    ax.plot(df["x"], df["Line C"], label="Line C")
+    ax.plot(df["x"], df["historical_data"], label="Historical Data")
+    ax.plot(df["x"], df["generated_data"], label="Generated Data")
+    #ax.plot(df["x"], df["dummy"], label="Dummy Prediction")
+    #ax.plot(df["x"], df["dummy2"], label="Dummy 2 Model Prediction")
 
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_title("Sample Line Plot")
+    ax.set_xlabel("Days")
+    ax.set_ylabel("Enrolled Students")
+    ax.set_title("Enrollment Forecasting for different models")
     ax.legend()
 
     st.pyplot(fig)
