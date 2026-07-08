@@ -1,0 +1,22 @@
+services:
+  - type: web
+    plan: free
+    name: Enrollment-Forecasting-API
+    runtime: python
+    repo: https://github.com/Florian-Preissner/BusinessAnalytics_EnrollmentForecasting
+    buildCommand: 'python -m pip install -r requirements.txt'
+    startCommand: 'python -m uvicorn backend.API:app'
+
+  - type: web
+    plan: free
+    name: Enrollment-Forecasting-Dashboard
+    runtime: python
+    repo: https://github.com/Florian-Preissner/BusinessAnalytics_EnrollmentForecasting
+    buildCommand: 'python -m pip install -r requirements.txt'
+    startCommand: 'python -m streamlit run frontend/app.py'
+    envVars:
+      - key: API_URL
+        fromService:
+            type: web
+            name: Enrollment-Forecasting-API
+            property: url
