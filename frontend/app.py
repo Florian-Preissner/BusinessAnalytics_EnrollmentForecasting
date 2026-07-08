@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import requests
 import os
 import json
+from evidently import Report
+from evidently.presets import DataDriftPreset
 
 st.set_page_config(page_title="Dashboard", layout="wide")
 models = ["dummy", "dummy2"]
@@ -158,7 +160,33 @@ def init_forecast_plots():
 
     st.pyplot(fig)
 
+def init_monitoring():
+    st.divider()
+    st.title("Model Monitoring")
+    #TODO set correct data
+    reference_df = pd.DataFrame({
+        "target": [1, 2, 3, 4, 5]
+    })
 
+    current_df = pd.DataFrame({
+        "target": [2, 3, 4, 5, 6]
+    })
+
+    report = Report(
+        metrics=[DataDriftPreset()]
+    )
+    snapshot = report.run(
+        reference_data=reference_df,
+        current_data=current_df
+    )
+
+    filename="report.html"
+    snapshot.save_html(filename)
+    with open(filename, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    st.iframe(html, height=900)
 
 init_top_layout()
 init_forecast_plots()
+init_monitoring()
