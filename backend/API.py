@@ -1,52 +1,79 @@
+import sys
+from pathlib import Path
+from typing import Dict
+
 from fastapi import FastAPI, HTTPException
-from .model.dummymodel import DummyModel
-from .data.data_transform import ETL
-from .data.data_transform.synthetic_data import load_synthetic_data
-import pandas as pd
 
-def init_models(data):
-    dummyModel = DummyModel(data)
-    return {"dummy" : dummyModel}
+try:
+    from model.EnrollmentForecastModel import EnrollmentForecastModel
+except ImportError:
+    sys.path.append(str(Path(__file__).resolve().parent))
+    from model.EnrollmentForecastModel import EnrollmentForecastModel
 
-def load_data():
-    return ETL.load_data().head(5), pd.DataFrame()
+
+def init_model() -> EnrollmentForecastModel:
+    backend_dir = Path(__file__).resolve().parent
+    model_path = backend_dir.parent / "lightgbm.pkl"
+    test_day_dir = backend_dir / "data" / "feature" / "feature_engineered_test_day_splits"
+    return EnrollmentForecastModel(model_path, test_day_dir)
 
 app = FastAPI()
-historical_data, generated_data = load_data() #historical = model data, generated = new data
-models = init_models(historical_data)
+models: Dict[str, EnrollmentForecastModel] = {"enrollment_forecast": init_model()}
 
 @app.get("/")
 def root():
-    return "Works :)"
+    return {"status": "ok", "model": "enrollment_forecast"}
 
-@app.get("/data")
-def get_data():
-    return {"historical_data" : historical_data.to_json(), "generated_data" : generated_data.to_json()}
+@app.get("/forecast/{dataset}")
+def get_forecast(dataset: str):
+    model = models.get("enrollment_forecast")
+    if not model:
+        raise HTTPException(status_code=404, detail="Model not found")
 
-@app.post("/data/new/{number_days}")
-def generate_data(number_days: int):
-    global generated_data
-    new_data,_ = load_synthetic_data(number_days)
-    new_data.head(5)
-    generated_data = pd.concat([generated_data, new_data], ignore_index=True)
-    return {"generated_data" : generated_data.to_json()}
+    if dataset == "test":
+        payload = model.predict_test().to_dict(orient="records")
+    else:
+        raise HTTPException(status_code=400, detail="dataset must be 'test'")
 
-@app.post("/retrain")
-def retrain_models():
-    global historical_data, generated_data, models
+    return {"predictions": payload}
 
-    historical_data =pd.concat([ historical_data, generated_data], ignore_index=True)
-    generated_data = pd.DataFrame()
-    models = init_models(historical_data)
+@app.get("/forecast/course/{dataset}/{code_module}/{code_presentation}")
+def get_forecast_course(dataset: str, code_module: str, code_presentation: str):
+    model = models.get("enrollment_forecast")
+    if not model:
+        raise HTTPException(status_code=404, detail="Model not found")
 
-@app.get("/forecast/{model_id}/{N}")
-def get_NDay_Forecast(model_id: str, N: int):
-    global models
+    try:
+        payload = model.predict_course(code_module, code_presentation, dataset=dataset).to_dict(orient="records")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    model = models.get(model_id)
-    
-    if model:
-        predictions = model.predict(N)
-        return {"predicted_data" : predictions}
-    else: 
-        raise HTTPException(status_code=404, detail="Model does not exist")
+    return {"predictions": payload}
+
+@app.get("/evaluate")
+def evaluate_model():
+    model = models.get("enrollment_forecast")
+    if not model:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    try:
+        metrics = model.evaluate()
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"evaluation": metrics}
+
+@app.get("/courses/{dataset}")
+def get_courses(dataset: str):
+    model = models.get("enrollment_forecast")
+    if not model:
+        raise HTTPException(status_code=404, detail="Model not found")
+
+    if dataset != "test":
+        raise HTTPException(status_code=400, detail="dataset must be 'test'")
+
+    try:
+        courses = model.get_available_courses(dataset=dataset)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return {"courses": [list(course) for course in courses]}
