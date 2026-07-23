@@ -4,7 +4,7 @@ services:
     name: Enrollment-Forecasting-API
     runtime: python
     repo: https://github.com/Florian-Preissner/BusinessAnalytics_EnrollmentForecasting
-    buildCommand: 'python -m pip install -r requirements.txt'
+    buildCommand: 'python -m pip install -r backend/requirements.txt'
     startCommand: 'python -m uvicorn backend.API:app'
 
   - type: web
@@ -12,5 +12,5 @@ services:
     name: Enrollment-Forecasting-Dashboard
     runtime: python
     repo: https://github.com/Florian-Preissner/BusinessAnalytics_EnrollmentForecasting
-    buildCommand: 'python -m pip install -r requirements.txt'
+    buildCommand: 'python -m pip install -r frontend/requirements.txt'
     startCommand: 'python -m streamlit run frontend/app.py'
