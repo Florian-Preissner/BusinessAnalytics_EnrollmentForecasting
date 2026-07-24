@@ -68,6 +68,8 @@ def predict_day_offset(day_offset: int) -> pd.DataFrame:
     )
     if "enrollment_num_daily" in df.columns:
         result["actual_enrollment"] = df["enrollment_num_daily"].values
+    if "marketing_spend" in df.columns:
+        result["marketing_spend"] = df["marketing_spend"].values
     return result.sort_values(["day_offset", "code_module", "code_presentation"]).reset_index(drop=True)
 
 
@@ -124,6 +126,8 @@ def predict_course_history(day_offset: int, course_key: str) -> pd.DataFrame:
     )
     if "enrollment_num_daily" in filtered.columns:
         result["actual_enrollment"] = filtered["enrollment_num_daily"].values
+    if "marketing_spend" in filtered.columns:
+        result["marketing_spend"] = filtered["marketing_spend"].values
     return result.sort_values("day_offset").reset_index(drop=True)
 
 
@@ -131,11 +135,17 @@ def predict_course_history(day_offset: int, course_key: str) -> pd.DataFrame:
 def get_forecast_summary(forecast_df: pd.DataFrame) -> dict[str, float]:
     if forecast_df.empty or "predicted_enrollment" not in forecast_df.columns:
         return {}
+
+    marketing_budget_sum = 0.0
+    if "marketing_spend" in forecast_df.columns:
+        marketing_budget_sum = float(forecast_df["marketing_spend"].fillna(0).sum())
+
     return {
         "mean": float(forecast_df["predicted_enrollment"].mean()),
         "max": float(forecast_df["predicted_enrollment"].max()),
         "min": float(forecast_df["predicted_enrollment"].min()),
         "band_width": 10.4,
+        "marketing_budget_sum": marketing_budget_sum,
     }
 
 
@@ -284,11 +294,12 @@ def init_forecast_plots():
 
             if summary:
                 st.subheader("Forecast Summary")
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2, col3, col4, col5 = st.columns(5)
                 col1.metric("Predicted Mean", f"{summary['mean']:.1f} students/day")
                 col2.metric("Forecast Max", f"{summary['max']:.0f} students")
                 col3.metric("Forecast Min", f"{summary['min']:.0f} students")
                 col4.metric("95% Band Width", f"±{summary['band_width']:.1f} students")
+                col5.metric("Marketing Budget", f"${summary.get('marketing_budget_sum', 0.0):.2f}")
 
             if evaluation:
                 st.subheader("Model Evaluation")
