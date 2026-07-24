@@ -7,3 +7,4 @@ evidently
 joblib
 lightgbm
 plotly
+xgboost
