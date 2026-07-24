@@ -5,8 +5,8 @@ services:
     runtime: python
     repo: https://github.com/Florian-Preissner/BusinessAnalytics_EnrollmentForecasting
     buildCommand: 'python -m pip install -r backend/requirements.txt'
-    startCommand: 'python -m uvicorn backend.API:app'
-
+    startCommand: 'python -m uvicorn backend.API:app --host 0.0.0.0  --port $PORT'
+    
   - type: web
     plan: free
     name: Enrollment-Forecasting-Dashboard
