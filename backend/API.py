@@ -13,7 +13,7 @@ except ImportError:
 
 def init_model() -> EnrollmentForecastModel:
     backend_dir = Path(__file__).resolve().parent
-    model_path = backend_dir.parent / "lightgbm.pkl"
+    model_path = backend_dir.parent / "xgboost.pkl"
     test_day_dir = backend_dir / "data" / "feature" / "feature_engineered_test_day_splits"
     return EnrollmentForecastModel(model_path, test_day_dir)
 

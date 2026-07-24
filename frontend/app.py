@@ -26,7 +26,7 @@ except ImportError:
 st.set_page_config(page_title="Enrollment Forecasting", layout="wide")
 
 repo_root = Path(__file__).resolve().parent.parent
-model_path = repo_root / "lightgbm.pkl"
+model_path = repo_root / "xgboost.pkl"
 test_day_split_dir = repo_root / "backend" / "data" / "feature" / "feature_engineered_test_day_splits"
 
 model = EnrollmentForecastModel(model_path, test_day_split_dir)
@@ -53,6 +53,7 @@ def load_day_datasets(max_day_offset: int) -> pd.DataFrame:
 @st.cache_data
 def predict_day_offset(day_offset: int) -> pd.DataFrame:
     df = load_day_datasets(day_offset)
+    print("predict day offset", df)
     if df.empty:
         return pd.DataFrame()
 
@@ -209,6 +210,8 @@ def init_top_layout():
     col1, col2 = st.columns([2, 1])
     with col1:
         st.markdown("**Dataset:** test")
+        if "day_offset" not in st.session_state:
+            st.session_state.day_offset = 0
         st.slider(
             "Select day offset",
             min_value=min_offset,
@@ -348,7 +351,6 @@ def init_monitoring():
     if not isinstance(forecast_df, pd.DataFrame):
         forecast_df = pd.DataFrame(forecast_df)
 
-    print(forecast_df)
     if not forecast_df.empty:
 
         # data drift monitoring

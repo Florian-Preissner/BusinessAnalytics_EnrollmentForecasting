@@ -38,7 +38,7 @@ class EnrollmentForecastModel:
         )
 
         self.model = self._load_model(self.model_path)
-        self.expected_feature_names = self._extract_expected_feature_names(self.model)
+        #self.expected_feature_names = self._extract_expected_feature_names(self.model)
         self.train_df = pd.DataFrame()
         self.test_df = self._load_feature_day_splits(self.test_feature_day_split_dir)
 
@@ -119,11 +119,19 @@ class EnrollmentForecastModel:
         if "date" in features.columns:
             features = features.drop(columns=["date"])
 
-        categorical_columns = features.select_dtypes(include=["object", "category"]).columns
-        if len(categorical_columns) > 0:
-            features = pd.get_dummies(features, drop_first=True)
+        #categorical_columns = features.select_dtypes(include=["object", "category"]).columns
+        #if len(categorical_columns) > 0:
+        #    features = pd.get_dummies(features, drop_first=True)
 
-        features = features.reindex(columns=self.expected_feature_names, fill_value=0)
+        if "code_presentation" in features.columns:
+            features = features.drop(columns=["code_presentation"])
+        
+        if "day_offset" in features.columns:
+            features = features.drop(columns=["day_offset"])
+        if "code_module" in features.columns:
+            features = features.drop(columns=["code_module"])
+        #features = features.reindex(columns=self.expected_feature_names, fill_value=0)
+        
         return features
 
     def predict(self, df: pd.DataFrame) -> np.ndarray:
@@ -136,6 +144,7 @@ class EnrollmentForecastModel:
             Numpy array of predictions.
         """
         X = self.prepare_features(df)
+
         try:
             predictions = self.model.predict(X)
         except Exception as exc:
