@@ -11,6 +11,7 @@ try:
     from evidently import Report, Regression, Dataset, DataDefinition
     from evidently.presets import DataDriftPreset
     from evidently.presets import RegressionPreset
+    from evidently.metrics import ValueDrift
 except Exception:  # pragma: no cover - optional monitoring dependency
     Report = None
     DataDriftPreset = None
@@ -352,11 +353,10 @@ def init_monitoring():
 
         # data drift monitoring
         tmp_df = forecast_df
-        actual_df = tmp_df.drop(columns=["predicted_enrollment", "code_presentation", "code_module", "day_offset"])
-        predicted_df = tmp_df.drop(columns=["actual_enrollment", "code_presentation", "code_module", "day_offset"])
+        actual_df = tmp_df.drop(columns=["predicted_enrollment"])
+        predicted_df = tmp_df.drop(columns=["actual_enrollment"])
         actual_df = actual_df.rename(columns={"actual_enrollment" : "enrollment"})
         predicted_df = predicted_df.rename(columns={"predicted_enrollment" : "enrollment"})
-        
 
         reference_dataset = Dataset.from_pandas(
             actual_df,
@@ -367,7 +367,9 @@ def init_monitoring():
         )
 
 
-        report = Report(metrics=[DataDriftPreset()])
+        report = Report(metrics=[
+            ValueDrift(column="enrollment"),
+            ])
         snapshot = report.run(reference_data=reference_dataset, current_data=current_dataset)
 
         filename = "report.html"
