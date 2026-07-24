@@ -8,8 +8,9 @@ import pandas as pd
 import streamlit as st
 
 try:
-    from evidently import Report
+    from evidently import Report, Regression, Dataset, DataDefinition
     from evidently.presets import DataDriftPreset
+    from evidently.presets import RegressionPreset
 except Exception:  # pragma: no cover - optional monitoring dependency
     Report = None
     DataDriftPreset = None
@@ -342,18 +343,64 @@ def init_monitoring():
         st.info("Install evidently to enable model monitoring reports.")
         return
 
-    reference_df = pd.DataFrame({"target": [1, 2, 3, 4, 5]})
-    current_df = pd.DataFrame({"target": [2, 3, 4, 5, 6]})
+    forecast_df = st.session_state.predicted_data
+    if not isinstance(forecast_df, pd.DataFrame):
+        forecast_df = pd.DataFrame(forecast_df)
 
-    report = Report(metrics=[DataDriftPreset()])
-    snapshot = report.run(reference_data=reference_df, current_data=current_df)
+    print(forecast_df)
+    if not forecast_df.empty:
 
-    filename = "report.html"
-    snapshot.save_html(filename)
-    with open(filename, "r", encoding="utf-8") as f:
-        html = f.read()
+        # data drift monitoring
+        tmp_df = forecast_df
+        actual_df = tmp_df.drop(columns=["predicted_enrollment", "code_presentation", "code_module", "day_offset"])
+        predicted_df = tmp_df.drop(columns=["actual_enrollment", "code_presentation", "code_module", "day_offset"])
+        actual_df = actual_df.rename(columns={"actual_enrollment" : "enrollment"})
+        predicted_df = predicted_df.rename(columns={"predicted_enrollment" : "enrollment"})
+        
 
-    st.components.v1.iframe(html, height=900)
+        reference_dataset = Dataset.from_pandas(
+            actual_df,
+        )
+
+        current_dataset = Dataset.from_pandas(
+            predicted_df,
+        )
+
+
+        report = Report(metrics=[DataDriftPreset()])
+        snapshot = report.run(reference_data=reference_dataset, current_data=current_dataset)
+
+        filename = "report.html"
+        snapshot.save_html(filename)
+        with open(filename, "r", encoding="utf-8") as f:
+            html = f.read()
+        st.iframe(html, height=900)
+
+
+        # regression monitoring
+        data_definition = DataDefinition(regression=[
+            Regression(
+                target="actual_enrollment",
+                prediction="predicted_enrollment",
+            )
+        ])
+        current_dataset = Dataset.from_pandas(
+            forecast_df,
+            data_definition=data_definition,
+        )
+        report = Report(metrics=[
+            RegressionPreset()
+        ])
+        snapshot = report.run(current_data=current_dataset)
+
+        filename = "report_reg.html"
+        snapshot.save_html(filename)
+        with open(filename, "r", encoding="utf-8") as f:
+            html = f.read()
+        st.iframe(html, height=900)
+
+    else:
+        st.info("Run forecasting to see monitoring")
 
 
 init_top_layout()
