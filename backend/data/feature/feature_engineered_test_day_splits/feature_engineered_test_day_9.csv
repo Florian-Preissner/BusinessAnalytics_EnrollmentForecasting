@@ -1,3 +1,5 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:76aa150f8426159dce62989bf145de67012e3db66087de0eecc17541cfbc6f0d
-size 1242
+code_presentation,historical_student_count,pct_male,pct_higher_ed,total_assignments,total_learning_materials,day_offset,marketing_spend,holiday_flag,semester_start,semester_end_flag,day_of_week,is_weekend,code_module,module_AAA,module_BBB,module_CCC,module_DDD,module_EEE,module_FFF,module_GGG,month,year,sem_B,sem_J,lag_1,lag_7,lag_14,lag_30,rolling_mean_7,rolling_mean_30,rolling_std_30,enrollment_num_daily
+2014B,1500,0.8253333333333334,0.2433333333333333,13,1967,9,29.26,0,1,0,4,0,FFF,False,False,False,False,False,True,False,1,2014,True,False,65.0,67.0,0.0,10.0,63.714285714285715,28.266666666666666,32.04085036252976,70
+2013J,952,0.1869747899159664,0.2300420168067226,10,367,9,46.51,0,1,0,4,0,GGG,False,False,False,False,False,False,True,1,2013,False,True,49.0,64.0,0.0,13.0,62.142857142857146,30.1,24.007685551032203,70
+2014J,749,0.1949265687583444,0.2002670226969292,10,367,9,23.28,0,1,0,4,0,GGG,False,False,False,False,False,False,True,1,2014,False,True,61.0,72.0,5.0,25.0,58.42857142857143,29.533333333333335,22.256705046799475,46
+2014B,833,0.2004801920768307,0.2160864345738295,10,367,9,36.55,0,1,0,4,0,GGG,False,False,False,False,False,False,True,1,2014,True,False,50.0,67.0,65.0,20.0,57.0,30.733333333333334,25.98266442408691,46
