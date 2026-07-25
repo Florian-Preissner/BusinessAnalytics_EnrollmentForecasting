@@ -61,19 +61,13 @@ def generate_synthetic_data(courses_df, days_per_presentation=250, seed=42):
         )).astype(int)
         
         # Corresponding marketing costs
-        # marketing_spend = np.where(marketing_flag == 1, rng.uniform(500, 2000, size=marketing_flag.shape), rng.uniform(10, 50, size=marketing_flag.shape)).round(2)
         n_days = len(marketing_flag)
 
-        # baseline: mỗi ngày dao động quanh mức thấp
         base = rng.normal(loc=30, scale=8, size=n_days)
-
-        # ngày có campaign: mean cao hơn hẳn, variance cũng lớn hơn (campaign to nhỏ khác nhau)
         peak = rng.normal(loc=1200, scale=350, size=n_days)
-
         marketing_spend = np.where(marketing_flag == 1, peak, base)
-        marketing_spend = np.clip(marketing_spend, 0, None).round(2)  # spend không âm
+        marketing_spend = np.clip(marketing_spend, 0, None).round(2)
         
-        # Tạo DataFrame cho khóa học này
         df_temp = pd.DataFrame({
             "code_module": module,
             "code_presentation": presentation,
@@ -87,7 +81,6 @@ def generate_synthetic_data(courses_df, days_per_presentation=250, seed=42):
         })
         all_series.append(df_temp)
 
-    # Nối tất cả các chuỗi thời gian của mọi môn học lại với nhau
     combined_ts = pd.concat(all_series, ignore_index=True)
     return combined_ts
 
