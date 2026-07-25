@@ -3,6 +3,8 @@ pandas
 numpy
 matplotlib
 requests
-os
-json
 evidently
+joblib
+lightgbm
+plotly
+xgboost
