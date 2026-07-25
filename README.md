@@ -88,7 +88,7 @@ streamlit run frontend/app.py
 ```
 Front-end: `http://localhost:8501`
 
-### Step 7 (tùy chọn): Run Backend API
+### Step 7: Run Backend API
 
 ```bash
 uvicorn backend.API:app --reload
