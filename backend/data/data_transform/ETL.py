@@ -69,7 +69,7 @@ def build_feature_table(oulad_df, synthetic_df):
         on=['code_module', 'code_presentation'], 
         how='left'
     )
-
+    print(df_master.info())
     # Fill missing values after the merge
     df_master = df_master.fillna({
         'historical_student_count': 0,

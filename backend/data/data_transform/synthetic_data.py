@@ -157,7 +157,7 @@ def build_data_dictionary():
 
 
 def save_synthetic_outputs(cleaned_df, dictionary):
-    synthetic_path = OUTPUT_DIR / "sub_sub_synthetic_marketing_data.csv"
+    synthetic_path = OUTPUT_DIR / "synthetic_marketing_data.csv"
     dictionary_path = OUTPUT_DIR / "synthetic_data_dictionary.json"
 
     cleaned_df.to_csv(synthetic_path, index=False)
